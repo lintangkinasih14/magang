@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Form - Dark Mode</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 500px;
+            padding: 20px;
+            background-color: #444;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        h2 {
+            color: #ffa726;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            font-weight: bold;
+            color: #ffa726;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #777;
+            background-color: #555;
+            color: #ddd;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #ffa726;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-edit {
+            background-color: #29b6f6;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            margin-right: 5px;
+        }
+        .btn-delete {
+            background-color: #e53935;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .task-item {
+            background-color: #555;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 5px solid #ffa726;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .task-info p {
+            margin: 5px 0;
+            color: #ddd;
+        }
+        .task-info p strong {
+            color: #ffa726;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #444;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            width: 300px;
+            max-width: 90%;
+            text-align: center;
+        }
+        .modal-content h3 {
+            color: #ffa726;
+        }
+        .close-modal {
+            background-color: #e53935;
+            padding: 5px 10px;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Task Form</h2>
+    <form id="taskForm">
+        <div class="form-group">
+            <label for="task">New Task</label>
+            <input type="text" id="task" name="task" required>
+        </div>
+        <div class="form-group">
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate" name="startDate" required>
+        </div>
+        <div class="form-group">
+            <label for="targetDate">Target Date</label>
+            <input type="date" id="targetDate" name="targetDate" required>
+        </div>
+        <button type="submit" class="btn-submit">Submit</button>
+    </form>
+
+    <div class="result" id="result"></div>
+</div>
+
+<!-- Modal for editing task -->
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <h3>Edit Task</h3>
+        <form id="editTaskForm">
+            <div class="form-group">
+                <label for="editTask">Task</label>
+                <input type="text" id="editTask" required>
+            </div>
+            <div class="form-group">
+                <label for="editStartDate">Start Date</label>
+                <input type="date" id="editStartDate" required>
+            </div>
+            <div class="form-group">
+                <label for="editTargetDate">Target Date</label>
+                <input type="date" id="editTargetDate" required>
+            </div>
+            <button type="submit" class="btn-submit">Save Changes</button>
+            <button type="button" class="close-modal">Close</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        var currentEditItem;
+
+        // Submit form and display results
+        $('#taskForm').on('submit', function(event) {
+            event.preventDefault();
+            var task = $('#task').val();
+            var startDate = $('#startDate').val();
+            var targetDate = $('#targetDate').val();
+
+            var taskItem = $('<div class="task-item"></div>');
+            var taskInfo = $('<div class="task-info"></div>');
+            taskInfo.append('<p><strong>Task:</strong> ' + task + '</p>');
+            taskInfo.append('<p><strong>Start Date:</strong> ' + startDate + '</p>');
+            taskInfo.append('<p><strong>Target Date:</strong> ' + targetDate + '</p>');
+
+            var editButton = $('<button class="btn-edit">Edit</button>');
+            editButton.on('click', function() {
+                currentEditItem = taskItem;
+                $('#editTask').val(task);
+                $('#editStartDate').val(startDate);
+                $('#editTargetDate').val(targetDate);
+                $('#editModal').fadeIn();
+            });
+
+            var deleteButton = $('<button class="btn-delete">Delete</button>');
+            deleteButton.on('click', function() {
+                taskItem.remove();
+            });
+
+            taskItem.append(taskInfo);
+            taskItem.append(editButton);
+            taskItem.append(deleteButton);
+            $('#result').append(taskItem);
+
+            $('#taskForm')[0].reset();
+        });
+
+        // Save changes in edit modal
+        $('#editTaskForm').on('submit', function(event) {
+            event.preventDefault();
+            var task = $('#editTask').val();
+            var startDate = $('#editStartDate').val();
+            var targetDate = $('#editTargetDate').val();
+
+            currentEditItem.find('.task-info').html(
+                '<p><strong>Task:</strong> ' + task + '</p>' +
+                '<p><strong>Start Date:</strong> ' + startDate + '</p>' +
+                '<p><strong>Target Date:</strong> ' + targetDate + '</p>'
+            );
+
+            $('#editModal').fadeOut();
+        });
+
+        // Close modal
+        $('.close-modal').on('click', function() {
+            $('#editModal').fadeOut();
+        });
+    });
+</script>
+
+</body>
+</html>
